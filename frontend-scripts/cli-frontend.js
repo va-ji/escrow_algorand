@@ -1,7 +1,7 @@
 const algosdk = require('algosdk');
 const counterSource = require('./escrow-teal');
 const clearSource = require('./clear-teal');
-
+const { encodeAddress, getApplicationAddress } = require('algosdk');
 async function compileProgram(client, programSource) {
   let encoder = new TextEncoder();
   let programBytes = encoder.encode(programSource);
@@ -51,9 +51,14 @@ async function frontEnd() {
     let params = await algodClient.getTransactionParams().do();
 
     const senderSeed = "garage bright wisdom old fan mesh pull acquire clever pear era flight horror memory nerve ten hospital scorpion cricket erosion leader better hockey ability throw";
+    const seed = "undo panel design trigger hurdle vehicle service pioneer bracket enemy blossom hat never work cattle gift moral evidence pledge same scatter glow slow absent essence";
+
     let senderAccount = algosdk.mnemonicToSecretKey(senderSeed);
     let sender = senderAccount.addr;
 
+    // let senderAcc = algosdk.mnemonicToSecretKey(seed);
+    // let senderAdd = senderAcc.addr;
+    // console.log(senderAdd);
 
     let escrowProgram = await compileProgram(algodClient, counterSource);
     let clearProgram = await compileProgram(algodClient, clearSource);
@@ -68,7 +73,7 @@ async function frontEnd() {
     let accounts = undefined;
     let foreignApps = undefined;
     let foreignAssets = undefined;
-    let appID = 85113175 //TODO:find a dynaimic way to update this in the front end
+    let appID = 89527533 //TODO:find a dynaimic way to update this in the front end
 
 
     let appAdmin = new algosdk.decodeAddress(sender);
@@ -76,19 +81,24 @@ async function frontEnd() {
     let appArgs = [];
     appArgs.push(appAdmin.publicKey);
 
-    let amount = 1000000
+    let amount = 2000000
 
     let appArgs2 = [];
-    appArgs2.push(EncodeBytes('transfer'));
-    appArgs2.push(EncodeUint(amount));
+    appArgs2.push(EncodeBytes('opt_nft')); //opt in to the nft asset
+    // appArgs2.push(EncodeBytes('transfer'));
+    // appArgs2.push(EncodeUint(amount));
+
+    let foreignAssets2 = [90433234]; // Change this to newly minted NFT
+    let escrowAddress = getApplicationAddress(appID);
+    console.log(escrowAddress);
 
 
+    // let deployContract = algosdk.makeApplicationCreateTxn(sender, params, onComplete, escrowProgram, clearProgram, localInts, localBytes, globalInts, globalBytes, appArgs, accounts, foreignApps, foreignAssets);
+    // let signedTxn = deployContract.signTxn(senderAccount.sk);
 
-    let deployContract = algosdk.makeApplicationCreateTxn(sender, params, onComplete, escrowProgram, clearProgram, localInts, localBytes, globalInts, globalBytes, appArgs, accounts, foreignApps, foreignAssets);
-    let signedTxn = deployContract.signTxn(senderAccount.sk);
-
-    //let callContract = algosdk.makeApplicationNoOpTxn(sender, params, appID, appArgs2, undefined, undefined, undefined);
-    //let signedTxn = callContract.signTxn(senderAccount.sk);
+    let callContract = algosdk.makeApplicationNoOpTxn(sender, params, appID, appArgs2, accounts, foreignApps, foreignAssets2);
+    // let callContract = algosdk.makeApplicationNoOpTxn(senderAdd, params, appID, appArgs2, undefined, undefined, undefined); //transfer
+    let signedTxn = callContract.signTxn(senderAccount.sk);
 
     // Submit the transaction
     let tx = (await algodClient.sendRawTransaction(signedTxn).do());

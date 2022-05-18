@@ -2,6 +2,7 @@ const algosdk = require('algosdk');
 const counterSource = require('./escrow-teal');
 const clearSource = require('./clear-teal');
 const { encodeAddress, getApplicationAddress } = require('algosdk');
+const { Account } = require('algosdk/dist/types/src/client/v2/algod/models/types');
 
 
 async function payment() {
@@ -18,18 +19,20 @@ async function payment() {
         const algodClient = new algosdk.Algodv2(token, baseServer, port);
         let params = await algodClient.getTransactionParams().do();
 
-        const senderSeed = "garage bright wisdom old fan mesh pull acquire clever pear era flight horror memory nerve ten hospital scorpion cricket erosion leader better hockey ability throw";
+        const senderSeed = "undo panel design trigger hurdle vehicle service pioneer bracket enemy blossom hat never work cattle gift moral evidence pledge same scatter glow slow absent essence";
+
         let senderAccount = algosdk.mnemonicToSecretKey(senderSeed);
         let sender = senderAccount.addr;
+        console.log(sender)
 
-
-        let escrowID = 85113175 //change this
+        let escrowID = 89527533 //change this
         let escrowAddress = getApplicationAddress(escrowID);
-        amount = 1000000;
+        let escrowAcc =
+            amount = 2000000;
 
 
 
-        let payment = algosdk.makePaymentTxnWithSuggestedParams(sender, escrowAddress, amount, undefined, undefined, params);
+        let payment = algosdk.makePaymentTxnWithSuggestedParams(sender, escrowAcc, amount, undefined, undefined, params);
 
         let signedTxn = payment.signTxn(senderAccount.sk);
 
